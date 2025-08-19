@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+print("\n====================================================")
+print("  développé par Geosmatic, ing. Ayouaz Maamar")
+print("====================================================\n")
+
 """
 Script pour copier les fichiers .laz et .las d'un répertoire source vers un répertoire de destination.
 

@@ -20,6 +20,7 @@ Cet utilitaire permet de copier facilement des fichiers LiDAR (avec extensions `
 - Création automatique des répertoires de destination si nécessaire
 - Statistiques détaillées après la copie (nombre de fichiers, taille totale)
 - Version Python : Barre de progression pendant la copie (via la bibliothèque tqdm)
+- Version Python : Vérification de l'espace disque disponible avant la copie
 
 ## Utilisation
 
@@ -136,3 +137,6 @@ copier_fichiers_lidar_python.bat /source:"C:\Donnees\LiDAR" /dest:"D:\Sauvegarde
 - La version Python utilise la bibliothèque tqdm pour afficher une barre de progression
   - Si tqdm n'est pas installée, le script fonctionnera quand même mais sans barre de progression
   - Pour installer tqdm : `pip install tqdm`
+- La version Python vérifie l'espace disque disponible avant de commencer la copie
+  - Une marge de sécurité de 10% est ajoutée à la taille totale des fichiers
+  - Si l'espace est insuffisant, le script s'arrête et affiche un message d'erreur

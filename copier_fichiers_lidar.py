@@ -14,6 +14,7 @@ import shutil
 import argparse
 from pathlib import Path
 import time
+import platform
 
 try:
     from tqdm import tqdm
@@ -36,6 +37,39 @@ def afficher_taille_lisible(taille_octets):
     return f"{taille:.2f} {suffixes[indice]}"
 
 
+def obtenir_espace_disque_disponible(chemin):
+    """Retourne l'espace disque disponible en octets pour le chemin spécifié.
+    
+    Args:
+        chemin (str): Chemin du répertoire
+        
+    Returns:
+        int: Espace disque disponible en octets
+    """
+    if platform.system() == 'Windows':
+        import ctypes
+        free_bytes = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+            ctypes.c_wchar_p(chemin), None, None, ctypes.pointer(free_bytes))
+        return free_bytes.value
+    else:
+        # Pour les systèmes Unix/Linux/MacOS
+        st = os.statvfs(chemin)
+        return st.f_bavail * st.f_frsize
+
+
+def calculer_taille_totale_fichiers(fichiers):
+    """Calcule la taille totale d'une liste de fichiers.
+    
+    Args:
+        fichiers (list): Liste d'objets Path représentant des fichiers
+        
+    Returns:
+        int: Taille totale en octets
+    """
+    return sum(fichier.stat().st_size for fichier in fichiers)
+
+
 def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sans_progression=False):
     """Copie les fichiers .laz et .las du répertoire source vers le répertoire destination.
     
@@ -56,7 +90,7 @@ def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sa
     # Vérifier si le répertoire source existe
     if not source_path.exists() or not source_path.is_dir():
         print(f"Erreur: Le répertoire source '{source_path}' n'existe pas.")
-        return 0, 0, 0
+        return 0, 0, 0, 0
     
     # Créer le répertoire de destination s'il n'existe pas
     if not destination_path.exists():
@@ -65,7 +99,7 @@ def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sa
             print(f"Répertoire de destination '{destination_path}' créé avec succès.")
         except Exception as e:
             print(f"Erreur lors de la création du répertoire de destination: {e}")
-            return 0, 0, 0
+            return 0, 0, 0, 0
     
     # Compteurs pour les statistiques
     nb_fichiers_copies = 0
@@ -79,7 +113,28 @@ def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sa
     # Vérifier si des fichiers ont été trouvés
     if not fichiers:
         print("Aucun fichier .laz ou .las trouvé dans le répertoire source.")
-        return 0, 0, 0
+        return 0, 0, 0, 0
+    
+    # Calculer la taille totale des fichiers à copier
+    taille_totale = calculer_taille_totale_fichiers(fichiers)
+    
+    # Vérifier l'espace disque disponible
+    espace_disponible = obtenir_espace_disque_disponible(str(destination_path))
+    
+    # Ajouter une marge de sécurité de 10%
+    espace_necessaire = int(taille_totale * 1.1)
+    
+    if espace_disponible < espace_necessaire:
+        print(f"Erreur: Espace disque insuffisant dans le répertoire de destination.")
+        print(f"  - Espace nécessaire: {afficher_taille_lisible(espace_necessaire)} (incluant une marge de 10%)")
+        print(f"  - Espace disponible: {afficher_taille_lisible(espace_disponible)}")
+        return 0, 0, 0, 0
+    
+    if verbose:
+        print(f"Espace disque disponible: {afficher_taille_lisible(espace_disponible)}")
+        print(f"Taille totale à copier: {afficher_taille_lisible(taille_totale)}")
+        print(f"Espace suffisant pour la copie.")
+
     
     print(f"Début de la copie de {len(fichiers)} fichiers...")
     debut_temps = time.time()

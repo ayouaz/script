@@ -70,7 +70,7 @@ def calculer_taille_totale_fichiers(fichiers):
     return sum(fichier.stat().st_size for fichier in fichiers)
 
 
-def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sans_progression=False):
+def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sans_progression=False, garde_structure=True, ecraser=False):
     """Copie les fichiers .laz et .las du répertoire source vers le répertoire destination.
     
     Args:
@@ -79,6 +79,8 @@ def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sa
         recursif (bool): Si True, recherche récursivement dans les sous-répertoires
         verbose (bool): Si True, affiche des informations détaillées pendant la copie
         sans_progression (bool): Si True, désactive la barre de progression même si tqdm est disponible
+        garde_structure (bool): Si True, préserve la structure des répertoires lors de la copie
+        ecraser (bool): Si True, écrase les fichiers existants sans demander de confirmation
     
     Returns:
         tuple: (nb_fichiers_copies, nb_fichiers_echoues, taille_copiee, temps_ecoule)
@@ -154,12 +156,66 @@ def copier_fichiers_lidar(source, destination, recursif=False, verbose=False, sa
     
     # Copier les fichiers
     for fichier in fichiers_iter:
-        # Déterminer le chemin relatif par rapport au répertoire source
-        chemin_relatif = fichier.relative_to(source_path)
-        chemin_destination = destination_path / chemin_relatif
-        
-        # Créer le répertoire parent dans la destination si nécessaire
-        chemin_destination.parent.mkdir(parents=True, exist_ok=True)
+        if garde_structure:
+            # Préserver la structure des répertoires
+            chemin_relatif = fichier.relative_to(source_path)
+            chemin_destination = destination_path / chemin_relatif
+            
+            # Créer le répertoire parent dans la destination si nécessaire
+            chemin_destination.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Vérifier si le fichier existe déjà
+            if chemin_destination.exists():
+                if ecraser:
+                    # Écraser sans demander
+                    pass
+                else:
+                    # Demander confirmation pour écraser
+                    reponse = ''
+                    if TQDM_DISPONIBLE and not sans_progression:
+                        fichiers_iter.write(f"Le fichier '{chemin_relatif}' existe déjà dans la destination.")
+                        # Pause la barre de progression pour l'interaction utilisateur
+                        with fichiers_iter.external_write_mode():
+                            reponse = input(f"Voulez-vous écraser '{chemin_relatif}'? (o/n): ").lower()
+                    else:
+                        print(f"Le fichier '{chemin_relatif}' existe déjà dans la destination.")
+                        reponse = input(f"Voulez-vous écraser '{chemin_relatif}'? (o/n): ").lower()
+                    
+                    if reponse != 'o':
+                        if TQDM_DISPONIBLE and not sans_progression:
+                            fichiers_iter.write(f"Fichier '{chemin_relatif}' ignoré.")
+                        else:
+                            print(f"Fichier '{chemin_relatif}' ignoré.")
+                        nb_fichiers_echoues += 1
+                        continue
+        else:
+            # Copier directement dans le répertoire de destination sans préserver la structure
+            chemin_destination = destination_path / fichier.name
+            
+            # Vérifier si le fichier existe déjà
+            if chemin_destination.exists():
+                if ecraser:
+                    # Écraser sans demander
+                    pass
+                else:
+                    # Demander confirmation pour écraser
+                    reponse = ''
+                    if TQDM_DISPONIBLE and not sans_progression:
+                        fichiers_iter.write(f"Le fichier '{fichier.name}' existe déjà dans la destination.")
+                        # Pause la barre de progression pour l'interaction utilisateur
+                        with fichiers_iter.external_write_mode():
+                            reponse = input(f"Voulez-vous écraser '{fichier.name}'? (o/n): ").lower()
+                    else:
+                        print(f"Le fichier '{fichier.name}' existe déjà dans la destination.")
+                        reponse = input(f"Voulez-vous écraser '{fichier.name}'? (o/n): ").lower()
+                    
+                    if reponse != 'o':
+                        if TQDM_DISPONIBLE and not sans_progression:
+                            fichiers_iter.write(f"Fichier '{fichier.name}' ignoré.")
+                        else:
+                            print(f"Fichier '{fichier.name}' ignoré.")
+                        nb_fichiers_echoues += 1
+                        continue
         
         # Copier le fichier
         try:
@@ -205,13 +261,28 @@ def main():
                         help="Affiche des informations détaillées pendant la copie")
     parser.add_argument("-np", "--sans-progression", action="store_true", 
                         help="Désactive la barre de progression (même si tqdm est disponible)")
+    parser.add_argument("-gs", "--garde-structure", action="store_true", 
+                        help="Préserve la structure des répertoires lors de la copie (activé par défaut)")
+    parser.add_argument("-ps", "--pas-structure", action="store_true", 
+                        help="Ne préserve pas la structure des répertoires (copie tous les fichiers directement dans le répertoire de destination)")
+    parser.add_argument("-e", "--ecraser", action="store_true", 
+                        help="Écrase les fichiers existants sans demander de confirmation")
     
     # Analyser les arguments
     args = parser.parse_args()
     
+    # Déterminer si on garde la structure des répertoires
+    # Par défaut, on garde la structure sauf si --pas-structure est spécifié
+    garde_structure = not args.pas_structure
+    
+    # Si les deux options contradictoires sont spécifiées, afficher un avertissement
+    if args.garde_structure and args.pas_structure:
+        print("Attention: Les options --garde-structure et --pas-structure sont toutes les deux spécifiées.")
+        print("L'option --pas-structure sera prioritaire.")
+    
     # Exécuter la copie
     nb_fichiers_copies, nb_fichiers_echoues, taille_copiee, temps_ecoule = copier_fichiers_lidar(
-        args.source, args.destination, args.recursif, args.verbose, args.sans_progression
+        args.source, args.destination, args.recursif, args.verbose, args.sans_progression, garde_structure, args.ecraser
     )
     
     # Afficher les statistiques

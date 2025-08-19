@@ -20,6 +20,9 @@ if "%~1"=="" (
     echo   /r                  Recherche recursive dans les sous-repertoires
     echo   /v                  Mode verbose (affiche plus d'informations)
     echo   /np                 Desactive la barre de progression
+    echo   /gs                 Preserve la structure des repertoires (active par defaut)
+    echo   /ps                 Ne preserve pas la structure des repertoires
+    echo   /e                  Ecrase les fichiers existants sans demander de confirmation
     echo   /aide               Affiche cette aide
     echo.
     echo Exemple: %~nx0 /source:"C:\Donnees\LiDAR" /dest:"D:\Sauvegarde\LiDAR" /r
@@ -46,6 +49,12 @@ if /i "!param:~0,8!"=="-source:" (
     set "params=!params! --verbose"
 ) else if /i "!param!"=="-np" (
     set "params=!params! --sans-progression"
+) else if /i "!param!"=="-gs" (
+    set "params=!params! --garde-structure"
+) else if /i "!param!"=="-ps" (
+    set "params=!params! --pas-structure"
+) else if /i "!param!"=="-e" (
+    set "params=!params! --ecraser"
 ) else if /i "!param!"=="-aide" (
     echo Ce script permet de copier des fichiers .laz et .las d'un repertoire source vers un repertoire de destination.
     echo.
@@ -57,6 +66,9 @@ if /i "!param:~0,8!"=="-source:" (
     echo   /r                  Recherche recursive dans les sous-repertoires
     echo   /v                  Mode verbose (affiche plus d'informations)
     echo   /np                 Desactive la barre de progression
+    echo   /gs                 Preserve la structure des repertoires (active par defaut)
+    echo   /ps                 Ne preserve pas la structure des repertoires
+    echo   /e                  Ecrase les fichiers existants sans demander de confirmation
     echo   /aide               Affiche cette aide
     echo.
     echo Exemple: %~nx0 /source:"C:\Donnees\LiDAR" /dest:"D:\Sauvegarde\LiDAR" /r

@@ -16,11 +16,24 @@ Cet utilitaire permet de copier facilement des fichiers LiDAR (avec extensions `
 
 - Copie des fichiers avec extensions `.laz` et `.las`
 - Option de recherche récursive dans les sous-répertoires
-- Préservation de la structure des dossiers lors de la copie
+- Option de préservation ou non de la structure des dossiers lors de la copie
+- Confirmation avant écrasement des fichiers existants (avec option pour désactiver)
 - Création automatique des répertoires de destination si nécessaire
 - Statistiques détaillées après la copie (nombre de fichiers, taille totale)
 - Version Python : Barre de progression pendant la copie (via la bibliothèque tqdm)
 - Version Python : Vérification de l'espace disque disponible avant la copie
+
+### Préservation de la structure des répertoires
+
+Par défaut, le script préserve la structure des répertoires lors de la copie. Cela signifie que si un fichier se trouve dans un sous-répertoire du répertoire source, il sera copié dans le même sous-répertoire relatif dans le répertoire de destination.
+
+Vous pouvez désactiver ce comportement en utilisant l'option `/ps` (version batch) ou `--pas-structure` (version Python). Dans ce cas, tous les fichiers seront copiés directement dans le répertoire de destination, sans tenir compte de leur emplacement d'origine.
+
+### Gestion des fichiers existants
+
+Par défaut, lorsqu'un fichier à copier existe déjà dans le répertoire de destination, le script demande à l'utilisateur s'il souhaite écraser le fichier existant. L'utilisateur peut répondre 'o' pour écraser ou toute autre touche pour ignorer le fichier.
+
+Vous pouvez désactiver cette confirmation et écraser automatiquement tous les fichiers existants en utilisant l'option `/e` (version batch) ou `--ecraser` (version Python).
 
 ## Utilisation
 
@@ -38,6 +51,9 @@ Options :
 - `/r` : Recherche récursive dans les sous-répertoires (optionnel)
 - `/v` : Mode verbose - affiche plus d'informations pendant la copie (optionnel)
 - `/np` : Désactive la barre de progression (optionnel)
+- `/gs` : Préserve la structure des répertoires (activé par défaut)
+- `/ps` : Ne préserve pas la structure des répertoires (copie tous les fichiers directement dans le répertoire de destination)
+- `/e` : Écrase les fichiers existants sans demander de confirmation (optionnel)
 - `/aide` : Affiche l'aide
 
 ### Via PowerShell directement
@@ -80,6 +96,9 @@ Options :
 - `--recursif` ou `-r` : Recherche récursivement dans les sous-répertoires (optionnel)
 - `--verbose` ou `-v` : Affiche des informations détaillées pendant la copie (optionnel)
 - `--sans-progression` ou `-np` : Désactive la barre de progression (optionnel)
+- `--garde-structure` ou `-gs` : Préserve la structure des répertoires (activé par défaut)
+- `--pas-structure` ou `-ps` : Ne préserve pas la structure des répertoires (copie tous les fichiers directement dans le répertoire de destination)
+- `--ecraser` ou `-e` : Écrase les fichiers existants sans demander de confirmation (optionnel)
 
 ## Exemples
 
@@ -128,6 +147,22 @@ python copier_fichiers_lidar.py --source "C:\Donnees\LiDAR" --destination "D:\Sa
 ```
 copier_fichiers_lidar_python.bat /source:"C:\Donnees\LiDAR" /dest:"D:\Sauvegarde\LiDAR" /r /np
 ```
+
+#### Exemple 5 : Copie sans préservation de la structure des répertoires
+
+```
+copier_fichiers_lidar_python.bat /source:"C:\Donnees\LiDAR" /dest:"D:\Sauvegarde\LiDAR" /r /ps
+```
+
+Cette commande copie tous les fichiers .laz et .las du répertoire C:\Donnees\LiDAR et ses sous-répertoires vers D:\Sauvegarde\LiDAR, sans préserver la structure des répertoires (tous les fichiers seront copiés directement dans le répertoire de destination).
+
+#### Exemple 6 : Copie avec écrasement automatique des fichiers existants
+
+```
+copier_fichiers_lidar_python.bat /source:"C:\Donnees\LiDAR" /dest:"D:\Sauvegarde\LiDAR" /r /e
+```
+
+Cette commande copie tous les fichiers .laz et .las du répertoire C:\Donnees\LiDAR et ses sous-répertoires vers D:\Sauvegarde\LiDAR, en écrasant automatiquement les fichiers existants sans demander de confirmation.
 
 ## Remarques
 

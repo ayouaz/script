@@ -1,0 +1,2 @@
+# Dépendances minimales pour exécuter le script
+tqdm>=4.65.0

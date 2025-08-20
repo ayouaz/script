@@ -4,13 +4,61 @@ Cet utilitaire permet de copier facilement des fichiers LiDAR (avec extensions `
 
 ## Contenu
 
-### Version PowerShell
+### Version PowerShell (Windows)
 - `copier_fichiers_lidar.ps1` : Script PowerShell principal
 - `copier_fichiers_lidar.bat` : Script batch pour faciliter l'exécution sous Windows
 
-### Version Python
+### Version Python (Multi-plateforme)
 - `copier_fichiers_lidar.py` : Script Python principal
 - `copier_fichiers_lidar_python.bat` : Script batch pour faciliter l'exécution sous Windows
+
+### Exécutables
+- `dist/copier_fichiers_lidar.exe` : Exécutable Windows (ne nécessite pas Python)
+- `dist/copier_fichiers_lidar` : Exécutable Linux/Ubuntu (ne nécessite pas Python)
+
+### Fichiers de dépendances
+- `requirements.txt` : Toutes les dépendances (incluant les outils de développement)
+- `requirements-minimal.txt` : Dépendances minimales pour exécuter le script
+
+## Installation
+
+### Prérequis
+
+Pour utiliser le script Python directement :
+- Python 3.6 ou supérieur
+- Bibliothèque tqdm (pour la barre de progression)
+
+### Installation des dépendances
+
+```bash
+# Installation minimale (juste pour exécuter le script)
+pip install -r requirements-minimal.txt
+
+# OU Installation complète (pour développement et création d'exécutables)
+pip install -r requirements.txt
+```
+
+### Création des exécutables
+
+#### Windows
+```bash
+pyinstaller --onefile copier_fichiers_lidar.py
+```
+
+#### Linux/Ubuntu
+```bash
+# Créer un environnement virtuel (recommandé)
+python3 -m venv venv
+source venv/bin/activate
+
+# Installer les dépendances
+pip install -r requirements.txt
+
+# Créer l'exécutable
+pyinstaller --onefile copier_fichiers_lidar.py
+```
+
+L'exécutable sera créé dans le dossier `dist/`.
 
 ## Fonctionnalités
 
@@ -91,6 +139,30 @@ python copier_fichiers_lidar.py --source "C:\Chemin\Source" --destination "D:\Ch
 ```
 
 Options :
+- `--source` ou `-s` : Chemin du répertoire source contenant les fichiers .laz et .las
+- `--destination` ou `-d` : Chemin du répertoire de destination où copier les fichiers
+- `--recursif` ou `-r` : Recherche récursivement dans les sous-répertoires (optionnel)
+- `--verbose` ou `-v` : Affiche des informations détaillées pendant la copie (optionnel)
+- `--sans-progression` ou `-np` : Désactive la barre de progression (optionnel)
+- `--garde-structure` ou `-gs` : Préserve la structure des répertoires (activé par défaut)
+- `--pas-structure` ou `-ps` : Ne préserve pas la structure des répertoires (copie tous les fichiers directement dans le répertoire de destination)
+- `--ecraser` ou `-e` : Écrase les fichiers existants sans demander de confirmation (optionnel)
+
+## Version Exécutable
+
+### Windows
+
+```
+dist\copier_fichiers_lidar.exe --source "C:\Chemin\Source" --destination "D:\Chemin\Destination" [--recursif] [--verbose]
+```
+
+### Linux/Ubuntu
+
+```
+./dist/copier_fichiers_lidar --source "/chemin/source" --destination "/chemin/destination" [--recursif] [--verbose]
+```
+
+Options (identiques à la version Python) :
 - `--source` ou `-s` : Chemin du répertoire source contenant les fichiers .laz et .las
 - `--destination` ou `-d` : Chemin du répertoire de destination où copier les fichiers
 - `--recursif` ou `-r` : Recherche récursivement dans les sous-répertoires (optionnel)

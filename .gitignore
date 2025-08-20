@@ -1,0 +1,26 @@
+# Python virtual environment
+venv/
+
+# PyInstaller build files
+build/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
